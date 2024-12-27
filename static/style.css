@@ -1,0 +1,50 @@
+body {
+    padding: 0px;
+    margin: 0px;
+}
+.clips {
+    max-width: 100px;
+	position: absolute;
+	bottom: 10px;
+    right: 10px;
+}
+.editmenu {
+    max-width: 100px;
+	position: absolute;
+	top: 70px;
+    left: 10px;
+}
+.handcursor {
+    cursor: pointer;
+}
+.debug-monitor {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+#progress-bar-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+#progress-bar {
+    width: 30%;
+    height: 2%;
+    margin-top: 4px;
+}
+.sminput {
+    width: 40px;
+}
+.gametext {
+    color:#fff;
+    text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;
+}

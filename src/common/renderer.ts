@@ -7,7 +7,7 @@ import { Camera } from "@Glibs/systems/camera/camera";
 export class Renderer extends THREE.WebGLRenderer implements IViewer, ILoop {
 
     constructor(private camera: Camera, private scene: THREE.Scene, canvas: Canvas, eventCtrl: IEventController) {
-        super({ /*alpha: true,*/ antialias: true, canvas: canvas.Canvas })
+        super({ /*alpha: true,*/ antialias: true })
 
         THREE.ColorManagement.enabled = true
         this.outputColorSpace = THREE.SRGBColorSpace
