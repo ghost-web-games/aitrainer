@@ -48,3 +48,16 @@ body {
     color:#fff;
     text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;
 }
+.ui {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.ui-center {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    font-size: large;
+    font-weight: bold;
+}
