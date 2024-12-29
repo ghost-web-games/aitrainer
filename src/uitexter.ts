@@ -1,5 +1,5 @@
-import { TraingParam } from "@Glibs/actors/agent/trainer";
 import IEventController from "@Glibs/interface/ievent";
+import { TrainingParam } from "@Glibs/types/agenttypes";
 import { EventTypes, UiInfoType } from "@Glibs/types/globaltypes";
 import { AttackOption, AttackType } from "@Glibs/types/playertypes";
 
@@ -8,13 +8,18 @@ export default class UiTexter {
     constructor(
         private eventCtrl: IEventController, 
     ) {
+        eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
+    }
+    RenderHTML() {
         const domUiCenter = document.getElementById("uicenter") as HTMLDivElement;
         domUiCenter.innerText = "EP:0";
+        domUiCenter.style.display = "block";
+        const domTexter = document.getElementById("uitexter") as HTMLSpanElement;
+        domTexter.style.display = "block";
         const domApple = document.getElementById("appleCounter") as HTMLSpanElement;
         domApple.innerText = `x${this.apples}`
 
-        eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
-        eventCtrl.RegisterEventListener(EventTypes.Attack + "aiagent", (opts: AttackOption[]) => {
+        this.eventCtrl.RegisterEventListener(EventTypes.Attack + "aiagent", (opts: AttackOption[]) => {
             opts.forEach((opt) => {
                 switch (opt.type) {
                     case AttackType.Heal:
@@ -24,11 +29,9 @@ export default class UiTexter {
                 }
             })
         })
-        eventCtrl.RegisterEventListener(EventTypes.AgentEpisode, (param: TraingParam, episode: number) => {
+        this.eventCtrl.RegisterEventListener(EventTypes.AgentEpisode, (param: TrainingParam, episode: number) => {
             domUiCenter.innerText = "EP:" + episode.toString()
-            eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, (1 - param.epsilon) * 100, 100)
+            this.eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, (1 - param.epsilon) * 100, 100)
         })
-
     }
-
 }

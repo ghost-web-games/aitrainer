@@ -14,7 +14,7 @@ body {
 	top: 70px;
     left: 10px;
 }
-.handcursor {
+.cursor {
     cursor: pointer;
 }
 .debug-monitor {
@@ -49,11 +49,13 @@ body {
     text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;
 }
 .ui {
+    display: none;
     position: absolute;
     top: 0;
     right: 0;
 }
 .ui-center {
+    display: none;
     position: absolute;
     top: 0;
     left: 50%;

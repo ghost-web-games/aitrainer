@@ -16,8 +16,16 @@ import { Monsters } from "@Glibs/actors/monsters/monsters";
 import { MonsterId } from "@Glibs/types/monstertypes";
 import Food from "./food";
 import { Alarm } from "@Glibs/systems/alarm/alarm";
+import GameCenter from "@Glibs/systems/gamecenter/gamecenter";
+import PlayState from "@Glibs/systems/gamecenter/playstate";
+import MenuState from "@Glibs/systems/gamecenter/menustate";
 import LolliBar from "@Glibs/ux/progress/lollibar";
 import UiTexter from "./uitexter";
+import WeelLoader from "@Glibs/ux/loading/loading";
+import { EventTypes } from "@Glibs/types/globaltypes";
+import TitleScreen from "@Glibs/ux/titlescreen/titlescreen";
+import MenuItem from "@Glibs/ux/titlescreen/menuitem";
+import { IPostPro } from "@Glibs/systems/postprocess/postpro";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -35,12 +43,26 @@ export class ThreeFactory {
     monster: Monsters
     food: Food[] = []
     alarm = new Alarm(this.eventCtrl)
-    bar = new LolliBar(this.eventCtrl)
+    loading = new WeelLoader(this.eventCtrl)
+    gamecenter = new GameCenter()
+
+    bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
     uiTexter = new UiTexter(this.eventCtrl)
+    titleScreen = new TitleScreen("AiTrainer", [
+        new MenuItem("Start", () => { 
+            this.titleScreen.Dispose()
+            this.bar.RenderHTML()
+            this.uiTexter.RenderHTML()
+            this.gamecenter.ChangeMode("playmode")
+        }),
+        new MenuItem("Load Ai Card", () => { }),
+        new MenuItem("Upload Ai Card", () => { }),
+        new MenuItem("How To", () => { }),
+    ])
 
     constructor(
         private eventCtrl: IEventController, 
-        private game: THREE.Scene
+        private game: THREE.Scene,
     ) {
         this.gphysics = new GPhysics(this.game, this.eventCtrl)
         this.invenFab = new InvenFactory(this.loader, this.eventCtrl)
@@ -54,9 +76,15 @@ export class ThreeFactory {
 
     }
     async init(nonglowfn?: Function) {
+        this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 10)
         await this.GltfLoad()
+        this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 40)
         await this.FoodLoad()
+        this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 70)
         await this.InitScene(nonglowfn)
+        this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 90)
+        this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 100)
+        this.titleScreen.RenderHTML()
     }
     async FoodLoad() {
         for(let i = 0; i < 10; i++)  {
@@ -80,31 +108,43 @@ export class ThreeFactory {
         return ret
     }
     async InitScene(nonglowfn?: Function) {
-        const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
-        if(!mon) throw new Error("undefined monster");
-
         this.food.forEach((f) => {
             nonglowfn?.(f.Meshs)
             this.game.add(f.Meshs)
         })
         
-        nonglowfn?.(mon.monModel.Meshs)
         nonglowfn?.(this.player.Meshs)
         nonglowfn?.(this.floor.Meshs)
         nonglowfn?.(this.wind.mesh)
         nonglowfn?.(this.player.Meshs)
         //this.tree.models.forEach((m) => { nonglowfn?.(m.Meshs) })
 
-        this.trainer = new Training(this.eventCtrl, this.player, [mon.monModel], [...this.food])
-        this.trainer.Start()
-
-        this.playerCtrl.Enable = true
-
-        this.game.add(
-            this.player.Meshs, 
-            this.floor.Meshs, 
-            this.wind.mesh,
-            this.light,
-        )
+        this.gamecenter.RegisterGameMode("playmode", 
+            new PlayState(this.game, [
+                this.player.Meshs,
+                this.floor.Meshs,
+                this.wind.mesh,
+                this.light,
+            ], {
+                initCall: async () => {
+                    const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
+                    if (!mon) throw new Error("undefined monster");
+                    nonglowfn?.(mon.monModel.Meshs)
+                    this.trainer = new Training(this.eventCtrl, this.player, [mon.monModel], [...this.food])
+                    this.trainer.Start()
+                    this.playerCtrl.Enable = true
+                }
+            }))
+        this.gamecenter.RegisterGameMode("menumode", 
+            new MenuState(this.game, [
+                this.player.Meshs,
+                this.floor.Meshs,
+                this.wind.mesh,
+                this.light,
+            ], {
+                initCall: () => {
+                }
+            }))
+        this.gamecenter.ChangeMode("menumode")
     }
 }

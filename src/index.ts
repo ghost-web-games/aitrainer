@@ -7,6 +7,7 @@ import { Effector } from '@Glibs/magical/effects/effector'
 import { IPostPro, Postpro } from '@Glibs/systems/postprocess/postpro'
 import { Camera } from '@Glibs/systems/camera/camera'
 import { ThreeFactory } from './3dfactory'
+import DefaultLights from '@Glibs/systems/lights/defaultlights'
 
 class Index {
   scene = new THREE.Scene()
@@ -16,9 +17,9 @@ class Index {
   canvas = new Canvas(this.eventCtrl)
   effector = new Effector(this.scene)
   pp: IPostPro
-  directlight: THREE.DirectionalLight
   fab = new ThreeFactory(this.eventCtrl, this.scene)
   controls: OrbitControls
+  light = new DefaultLights(this.scene)
 
   constructor() {
     this.camera = new Camera(this.canvas, this.eventCtrl, this.fab.player)
@@ -38,29 +39,8 @@ class Index {
 
     this.pp = new Postpro(this.scene, this.camera, this.renderer)
 
-    this.directlight = this.light()
   }
   
-  light() {
-    const abmbient = new THREE.AmbientLight(0xffffff, 1)
-    const hemispherelight = new THREE.HemisphereLight(0xffffff, 0x333333)
-    hemispherelight.position.set(0, 20, 10)
-    const directlight = new THREE.DirectionalLight(0xffffff, 3);
-    directlight.position.set(4, 10, 4)
-    directlight.lookAt(new THREE.Vector3().set(0, 2, 0))
-    directlight.castShadow = true
-    directlight.shadow.radius = 1000
-    directlight.shadow.mapSize.width = 4096
-    directlight.shadow.mapSize.height = 4096
-    directlight.shadow.camera.near = 1
-    directlight.shadow.camera.far = 1000.0
-    directlight.shadow.camera.left = 500
-    directlight.shadow.camera.right = -500
-    directlight.shadow.camera.top = 500
-    directlight.shadow.camera.bottom = -500
-    this.scene.add(abmbient, /*hemispherelight,*/ directlight, /*this.effector.meshs*/)
-    return directlight
-  }
   async init() {
     const nonglowfn = (mesh: any) => { this.pp.setNonGlow(mesh) }
     await this.fab.init(nonglowfn)
@@ -75,7 +55,7 @@ class Index {
   }
   render() {
     const delta = this.clock.getDelta()
-    this.pp.render(delta)
+    this.fab.gamecenter.Renderer(this.pp, delta)
     this.controls.update()
     this.canvas.update()
     this.fab.gphysics.update()
