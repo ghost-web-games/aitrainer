@@ -65,6 +65,8 @@ class Index {
 
 
 const index = new Index()
-index.init().then(() => {
-  index.animate()
+window.requestAnimationFrame(() => {
+  index.init().then(() => {
+    index.animate()
+  })
 })

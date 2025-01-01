@@ -7,7 +7,23 @@ module.exports = {
   entry: "./src/index.ts", // 번들링 시작 위치
   output: {
     path: path.join(__dirname, "/"), // 번들 결과물 위치
-    filename: "bundle.js",
+    filename: '[name].bundle.js', // 번들 파일명
+  },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
+  },
+  externals: {
+    '@tensorflow/tfjs': 'tf', // tf는 글로벌 CDN에서 제공하는 이름
+    bootstrap: 'bootstrap',
   },
   module: {
     rules: [
