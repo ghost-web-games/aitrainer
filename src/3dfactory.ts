@@ -28,6 +28,7 @@ import MenuItem from "@Glibs/ux/titlescreen/menuitem";
 import { IPostPro } from "@Glibs/systems/postprocess/postpro";
 import BootModal from "@Glibs/ux/dialog/bootmodal";
 import ModelStore from "@Glibs/actors/agent/modelstore";
+import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -49,31 +50,42 @@ export class ThreeFactory {
     loading = new WeelLoader(this.eventCtrl)
     gamecenter = new GameCenter()
     dialog = new BootModal()
+    settings = new Setting()
 
     bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
     uiTexter = new UiTexter(this.eventCtrl, this.dialog)
-    titleScreen = new TitleScreen("AiTrainer", [
-        new MenuItem("Start", () => { 
-            this.titleScreen.Dispose()
-            this.bar.RenderHTML()
-            this.uiTexter.RenderHTML()
-            this.gamecenter.ChangeMode("playmode")
-        }),
-        new MenuItem("Load Ai Card", async () => { 
-            this.dialog.RenderHtml("Load Ai Card", await this.modelStore.GetModelListElement())
-            this.dialog.show()
-        }),
-        new MenuItem("Upload Ai Card", () => { 
-            this.dialog.RenderHtml("Upload Ai Card", this.modelStore.GetUploadElement())
-            this.dialog.show()
-        }),
-        new MenuItem("How To", () => { }),
-    ])
+    titleScreen: TitleScreen
 
     constructor(
         private eventCtrl: IEventController, 
         private game: THREE.Scene,
     ) {
+        this.settings.addOption("Randomness", 0.995, () => { }, { type: OptType.Inputs })
+        this.settings.addOption("switch", false, () => { }, { type: OptType.Switches })
+        this.settings.addOption("check", true, () => { }, { type: OptType.Checks })
+        this.settings.addOption("radio", false, () => { }, { type: OptType.Radios })
+
+        this.titleScreen = new TitleScreen("AiTrainer", [
+            new MenuItem("Start", () => {
+                this.titleScreen.Dispose()
+                this.bar.RenderHTML()
+                this.uiTexter.RenderHTML()
+                this.gamecenter.ChangeMode("playmode")
+            }),
+            new MenuItem("Load Ai Card", async () => {
+                this.dialog.RenderHtml("Load Ai Card", await this.modelStore.GetModelListElement())
+                this.dialog.show()
+            }),
+            new MenuItem("Upload Ai Card", () => {
+                this.dialog.RenderHtml("Upload Ai Card", this.modelStore.GetUploadElement())
+                this.dialog.show()
+            }),
+            new MenuItem("Settings", () => { 
+                this.dialog.RenderHtml("Settings", this.settings.GetElement())
+                this.dialog.show()
+            }),
+            new MenuItem("How To", () => { }),
+        ])
         this.gphysics = new GPhysics(this.game, this.eventCtrl)
         this.invenFab = new InvenFactory(this.loader, this.eventCtrl)
         this.player = new Player(this.loader, this.loader.DogAsset, this.eventCtrl, this.game)
@@ -97,7 +109,7 @@ export class ThreeFactory {
         this.titleScreen.RenderHTML()
     }
     async FoodLoad() {
-        for(let i = 0; i < 10; i++)  {
+        for (let i = 0; i < 10; i++) {
             this.food.push(new Food(this.loader, this.loader.AppleAsset, this.player, this.eventCtrl, this.game))
         }
         const ret = await Promise.all(
@@ -122,14 +134,14 @@ export class ThreeFactory {
             nonglowfn?.(f.Meshs)
             this.game.add(f.Meshs)
         })
-        
+
         nonglowfn?.(this.player.Meshs)
         nonglowfn?.(this.floor.Meshs)
         nonglowfn?.(this.wind.mesh)
         nonglowfn?.(this.player.Meshs)
         //this.tree.models.forEach((m) => { nonglowfn?.(m.Meshs) })
 
-        this.gamecenter.RegisterGameMode("playmode", 
+        this.gamecenter.RegisterGameMode("playmode",
             new PlayState(this.game, [
                 this.player.Meshs,
                 this.floor.Meshs,
@@ -145,7 +157,7 @@ export class ThreeFactory {
                     this.playerCtrl.Enable = true
                 }
             }))
-        this.gamecenter.RegisterGameMode("menumode", 
+        this.gamecenter.RegisterGameMode("menumode",
             new MenuState(this.game, [
                 this.player.Meshs,
                 this.floor.Meshs,
