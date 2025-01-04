@@ -26,6 +26,8 @@ import { EventTypes } from "@Glibs/types/globaltypes";
 import TitleScreen from "@Glibs/ux/titlescreen/titlescreen";
 import MenuItem from "@Glibs/ux/titlescreen/menuitem";
 import { IPostPro } from "@Glibs/systems/postprocess/postpro";
+import BootModal from "@Glibs/ux/dialog/bootmodal";
+import ModelStore from "@Glibs/actors/agent/modelstore";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -42,12 +44,14 @@ export class ThreeFactory {
     trainer?: Training
     monster: Monsters
     food: Food[] = []
+    modelStore = new ModelStore()
     alarm = new Alarm(this.eventCtrl)
     loading = new WeelLoader(this.eventCtrl)
     gamecenter = new GameCenter()
+    dialog = new BootModal()
 
     bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
-    uiTexter = new UiTexter(this.eventCtrl)
+    uiTexter = new UiTexter(this.eventCtrl, this.dialog)
     titleScreen = new TitleScreen("AiTrainer", [
         new MenuItem("Start", () => { 
             this.titleScreen.Dispose()
@@ -55,8 +59,14 @@ export class ThreeFactory {
             this.uiTexter.RenderHTML()
             this.gamecenter.ChangeMode("playmode")
         }),
-        new MenuItem("Load Ai Card", () => { }),
-        new MenuItem("Upload Ai Card", () => { }),
+        new MenuItem("Load Ai Card", async () => { 
+            this.dialog.RenderHtml("Load Ai Card", await this.modelStore.GetModelListElement())
+            this.dialog.show()
+        }),
+        new MenuItem("Upload Ai Card", () => { 
+            this.dialog.RenderHtml("Upload Ai Card", this.modelStore.GetUploadElement())
+            this.dialog.show()
+        }),
         new MenuItem("How To", () => { }),
     ])
 

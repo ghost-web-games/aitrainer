@@ -1,3 +1,4 @@
+import IDialog from "@Glibs/interface/idialog";
 import IEventController from "@Glibs/interface/ievent";
 import { TrainingParam } from "@Glibs/types/agenttypes";
 import { EventTypes, UiInfoType } from "@Glibs/types/globaltypes";
@@ -7,6 +8,7 @@ export default class UiTexter {
     apples = 0
     constructor(
         private eventCtrl: IEventController, 
+        private dialog: IDialog,
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
     }
@@ -18,6 +20,12 @@ export default class UiTexter {
         domTexter.style.display = "block";
         const domApple = document.getElementById("appleCounter") as HTMLSpanElement;
         domApple.innerText = `x${this.apples}`
+
+        const domSetting = document.getElementById("gamesetting") as HTMLSpanElement;
+        domSetting.onclick = () => {
+            this.dialog.RenderHtml("Settings", "")
+            this.dialog.show()
+        }
 
         this.eventCtrl.RegisterEventListener(EventTypes.Attack + "aiagent", (opts: AttackOption[]) => {
             opts.forEach((opt) => {
