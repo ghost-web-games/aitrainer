@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { EventController } from '@Glibs/systems/event/eventctrl'
-import { Loader } from '@Glibs/loader/loader'
 import { Canvas } from '@Glibs/systems/event/canvas'
 import { Effector } from '@Glibs/magical/effects/effector'
 import { IPostPro, Postpro } from '@Glibs/systems/postprocess/postpro'
@@ -38,9 +37,15 @@ class Index {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     this.pp = new Postpro(this.scene, this.camera, this.renderer)
-
+    // 4. 창 크기 변경 이벤트 리스너 추가
+    window.addEventListener('resize', () => {
+      this.camera.resize(window.innerWidth, window.innerHeight)
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      const pixel = (window.devicePixelRatio >= 2) ? window.devicePixelRatio / 2 : window.devicePixelRatio
+      this.renderer.setPixelRatio(pixel);
+    }, false);
   }
-  
+
   async init() {
     const nonglowfn = (mesh: any) => { this.pp.setNonGlow(mesh) }
     await this.fab.init(nonglowfn)

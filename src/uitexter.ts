@@ -3,14 +3,22 @@ import IEventController from "@Glibs/interface/ievent";
 import { TrainingParam } from "@Glibs/types/agenttypes";
 import { EventTypes, UiInfoType } from "@Glibs/types/globaltypes";
 import { AttackOption, AttackType } from "@Glibs/types/playertypes";
+import Setting, { OptType } from "@Glibs/ux/settings/settings";
 
 export default class UiTexter {
     apples = 0
+    setting = new Setting()
     constructor(
         private eventCtrl: IEventController, 
         private dialog: IDialog,
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
+        this.setting.addOption("Save Training Data", false, () => { }, { 
+            type: OptType.Buttons,
+            onchange: (opt: any) => {
+                eventCtrl.SendEventMessage(EventTypes.AgentSave, opt)
+            }
+        })
     }
     RenderHTML() {
         const domUiCenter = document.getElementById("uicenter") as HTMLDivElement;
@@ -23,7 +31,7 @@ export default class UiTexter {
 
         const domSetting = document.getElementById("gamesetting") as HTMLSpanElement;
         domSetting.onclick = () => {
-            this.dialog.RenderHtml("Settings", "")
+            this.dialog.RenderHtml("Settings", this.setting.GetElement())
             this.dialog.show()
         }
 

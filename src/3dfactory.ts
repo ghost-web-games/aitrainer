@@ -5,11 +5,10 @@ import { Floor } from "./floor";
 import { Light } from "./common/light";
 import { Player } from "@Glibs/actors/player/player";
 import { PlayerCtrl } from "@Glibs/actors/player/playerctrl";
-import { FluffyTree } from "@Glibs/world/fluffytree/fluffytree";
 import { Wind } from "@Glibs/world/wind/wind";
 import IEventController from "@Glibs/interface/ievent";
 import { InvenFactory } from "@Glibs/inventory/invenfactory";
-import { FluffyTreeType, TreeMaker } from "@Glibs/world/fluffytree/treemaker";
+import { TreeMaker } from "@Glibs/world/fluffytree/treemaker";
 import Training from "@Glibs/actors/agent/trainer";
 import { MonsterDb } from "@Glibs/types/monsterdb";
 import { Monsters } from "@Glibs/actors/monsters/monsters";
@@ -25,10 +24,9 @@ import WeelLoader from "@Glibs/ux/loading/loading";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import TitleScreen from "@Glibs/ux/titlescreen/titlescreen";
 import MenuItem from "@Glibs/ux/titlescreen/menuitem";
-import { IPostPro } from "@Glibs/systems/postprocess/postpro";
 import BootModal from "@Glibs/ux/dialog/bootmodal";
 import ModelStore from "@Glibs/actors/agent/modelstore";
-import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
+import Setting, { OptType } from "@Glibs/ux/settings/settings";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -61,6 +59,7 @@ export class ThreeFactory {
         private game: THREE.Scene,
     ) {
         this.settings.addOption("Randomness", 0.995, () => { }, { type: OptType.Inputs })
+        this.settings.addOption("Auto Save", false, () => { }, { type: OptType.Switches })
         this.settings.addOption("switch", false, () => { }, { type: OptType.Switches })
         this.settings.addOption("check", true, () => { }, { type: OptType.Checks })
         this.settings.addOption("radio", false, () => { }, { type: OptType.Radios })
