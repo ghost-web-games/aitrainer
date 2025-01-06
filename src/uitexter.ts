@@ -13,10 +13,10 @@ export default class UiTexter {
         private dialog: IDialog,
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
-        const domId = this.setting.addOption("With Download", false, () => { }, { 
+        const domId = this.setting.addOption("With Download", { 
             type: OptType.Switches
         })
-        this.setting.addOption("Save Training Data", false, () => { }, { 
+        this.setting.addOption("Save Training Data", { 
             type: OptType.Buttons,
             onclick: (opt: Options) => {
                 const dom = document.getElementById(opt.uniqId) as HTMLInputElement
@@ -54,8 +54,10 @@ export default class UiTexter {
                 }
             })
         })
-        this.eventCtrl.RegisterEventListener(EventTypes.AgentEpisode, (param: TrainingParam, episode: number) => {
-            domUiCenter.innerText = "EP:" + episode.toString()
+        this.eventCtrl.RegisterEventListener(EventTypes.AgentEpisode, (param: TrainingParam) => {
+            domUiCenter.innerText = "EP:" + param.episode.toString()
+            this.apples = param.doneCount
+            domApple.innerText = `x${this.apples}`
             this.eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, (1 - param.epsilon) * 100, 100)
         })
     }

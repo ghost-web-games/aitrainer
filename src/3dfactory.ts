@@ -26,7 +26,7 @@ import TitleScreen from "@Glibs/ux/titlescreen/titlescreen";
 import MenuItem from "@Glibs/ux/titlescreen/menuitem";
 import BootModal from "@Glibs/ux/dialog/bootmodal";
 import ModelStore from "@Glibs/actors/agent/modelstore";
-import Setting, { OptType } from "@Glibs/ux/settings/settings";
+import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import Toast from "@Glibs/ux/toast/toast";
 
 export class ThreeFactory {
@@ -44,7 +44,7 @@ export class ThreeFactory {
     trainer?: Training
     monster: Monsters
     food: Food[] = []
-    modelStore = new ModelStore()
+    modelStore = new ModelStore(this.eventCtrl)
     alarm = new Alarm(this.eventCtrl)
     toast = new Toast(this.eventCtrl)
 
@@ -61,11 +61,17 @@ export class ThreeFactory {
         private eventCtrl: IEventController, 
         private game: THREE.Scene,
     ) {
-        this.settings.addOption("Randomness", 0.995, () => { }, { type: OptType.Inputs })
-        this.settings.addOption("Auto Save", false, () => { }, { type: OptType.Switches })
-        this.settings.addOption("switch", false, () => { }, { type: OptType.Switches })
-        this.settings.addOption("check", true, () => { }, { type: OptType.Checks })
-        this.settings.addOption("radio", false, () => { }, { type: OptType.Radios })
+        this.settings.addOption("Randomness", { type: OptType.Inputs, value: [0.995] })
+        this.settings.addLine()
+        this.settings.addOption("Auto Save",  { type: OptType.Switches })
+        this.settings.addLine()
+        this.settings.addOption("Speed", { 
+            type: OptType.Selects, name: "_speed", value: [1, 2, 3, 4, 5, 10], onchange: (opt: Options) => {
+                const dom = document.getElementById(opt.uniqId) as HTMLSelectElement
+                if(!dom) return
+                eventCtrl.SendEventMessage(EventTypes.TimeCtrl, Number(dom.value))
+            }
+        })
 
         this.titleScreen = new TitleScreen("AiTrainer", [
             new MenuItem("Start", () => {

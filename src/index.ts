@@ -22,7 +22,7 @@ class Index {
 
   constructor() {
     this.camera = new Camera(this.canvas, this.eventCtrl, this.fab.player)
-    this.camera.position.set(20, 20, 20)
+    this.camera.position.set(15, 15, 15)
     // Renderer Start
     THREE.ColorManagement.enabled = true
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
