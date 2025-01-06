@@ -27,6 +27,7 @@ import MenuItem from "@Glibs/ux/titlescreen/menuitem";
 import BootModal from "@Glibs/ux/dialog/bootmodal";
 import ModelStore from "@Glibs/actors/agent/modelstore";
 import Setting, { OptType } from "@Glibs/ux/settings/settings";
+import Toast from "@Glibs/ux/toast/toast";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -45,6 +46,8 @@ export class ThreeFactory {
     food: Food[] = []
     modelStore = new ModelStore()
     alarm = new Alarm(this.eventCtrl)
+    toast = new Toast(this.eventCtrl)
+
     loading = new WeelLoader(this.eventCtrl)
     gamecenter = new GameCenter()
     dialog = new BootModal()
@@ -80,7 +83,7 @@ export class ThreeFactory {
                 this.dialog.show()
             }),
             new MenuItem("Settings", () => { 
-                this.dialog.RenderHtml("Settings", this.settings.GetElement())
+                this.dialog.RenderHtml("Settings", this.settings.GetElements())
                 this.dialog.show()
             }),
             new MenuItem("How To", () => { }),
@@ -151,7 +154,7 @@ export class ThreeFactory {
                     const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
                     if (!mon) throw new Error("undefined monster");
                     nonglowfn?.(mon.monModel.Meshs)
-                    this.trainer = new Training(this.eventCtrl, this.player, [mon.monModel], [...this.food])
+                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, [mon.monModel], [...this.food])
                     this.trainer.Start()
                     this.playerCtrl.Enable = true
                 }

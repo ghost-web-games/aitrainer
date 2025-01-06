@@ -3,7 +3,7 @@ import IEventController from "@Glibs/interface/ievent";
 import { TrainingParam } from "@Glibs/types/agenttypes";
 import { EventTypes, UiInfoType } from "@Glibs/types/globaltypes";
 import { AttackOption, AttackType } from "@Glibs/types/playertypes";
-import Setting, { OptType } from "@Glibs/ux/settings/settings";
+import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 
 export default class UiTexter {
     apples = 0
@@ -13,10 +13,15 @@ export default class UiTexter {
         private dialog: IDialog,
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
+        const domId = this.setting.addOption("With Download", false, () => { }, { 
+            type: OptType.Switches
+        })
         this.setting.addOption("Save Training Data", false, () => { }, { 
             type: OptType.Buttons,
-            onchange: (opt: any) => {
-                eventCtrl.SendEventMessage(EventTypes.AgentSave, opt)
+            onclick: (opt: Options) => {
+                const dom = document.getElementById(opt.uniqId) as HTMLInputElement
+                const domDownload = document.getElementById(domId) as HTMLInputElement
+                eventCtrl.SendEventMessage(EventTypes.AgentSave, dom.value, domDownload.checked, opt)
             }
         })
     }
@@ -31,7 +36,11 @@ export default class UiTexter {
 
         const domSetting = document.getElementById("gamesetting") as HTMLSpanElement;
         domSetting.onclick = () => {
-            this.dialog.RenderHtml("Settings", this.setting.GetElement())
+            this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, 0)
+            this.dialog.RenderHtml("Settings", this.setting.GetElements(), {
+                event: () => {
+                    this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, 1)
+            }})
             this.dialog.show()
         }
 
