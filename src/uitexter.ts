@@ -7,12 +7,16 @@ import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 
 export default class UiTexter {
     apples = 0
+    timeScale = 1
     setting = new Setting()
     constructor(
         private eventCtrl: IEventController, 
         private dialog: IDialog,
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
+        eventCtrl.RegisterEventListener(EventTypes.TimeCtrl, (scale: number) => {
+            this.timeScale = scale
+        })
         const domId = this.setting.addOption("With Download", { 
             type: OptType.Switches
         })
@@ -22,6 +26,13 @@ export default class UiTexter {
                 const dom = document.getElementById(opt.uniqId) as HTMLInputElement
                 const domDownload = document.getElementById(domId) as HTMLInputElement
                 eventCtrl.SendEventMessage(EventTypes.AgentSave, dom.value, domDownload.checked, opt)
+            }
+        })
+        this.setting.addOption("Speed", { 
+            type: OptType.Selects, name: "_speed", value: [1, 2, 3, 4, 5, 10], onchange: (opt: Options) => {
+                const dom = document.getElementById(opt.uniqId) as HTMLSelectElement
+                if(!dom) return
+                this.timeScale = Number(dom.value)
             }
         })
     }
@@ -39,7 +50,7 @@ export default class UiTexter {
             this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, 0)
             this.dialog.RenderHtml("Settings", this.setting.GetElements(), {
                 event: () => {
-                    this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, 1)
+                    this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, this.timeScale)
             }})
             this.dialog.show()
         }

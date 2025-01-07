@@ -56,6 +56,7 @@ export class ThreeFactory {
     bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
     uiTexter = new UiTexter(this.eventCtrl, this.dialog)
     titleScreen: TitleScreen
+    timeScale = 1
 
     constructor(
         private eventCtrl: IEventController, 
@@ -69,7 +70,8 @@ export class ThreeFactory {
             type: OptType.Selects, name: "_speed", value: [1, 2, 3, 4, 5, 10], onchange: (opt: Options) => {
                 const dom = document.getElementById(opt.uniqId) as HTMLSelectElement
                 if(!dom) return
-                eventCtrl.SendEventMessage(EventTypes.TimeCtrl, Number(dom.value))
+                this.timeScale = Number(dom.value)
+                eventCtrl.SendEventMessage(EventTypes.TimeCtrl, this.timeScale)
             }
         })
 
@@ -160,7 +162,8 @@ export class ThreeFactory {
                     const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
                     if (!mon) throw new Error("undefined monster");
                     nonglowfn?.(mon.monModel.Meshs)
-                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, [mon.monModel], [...this.food])
+                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, [mon.monModel], [...this.food], 
+                        { timeScale: this.timeScale })
                     this.trainer.Start()
                     this.playerCtrl.Enable = true
                 }
