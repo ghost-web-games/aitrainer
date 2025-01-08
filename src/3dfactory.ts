@@ -28,6 +28,7 @@ import BootModal from "@Glibs/ux/dialog/bootmodal";
 import ModelStore from "@Glibs/actors/agent/modelstore";
 import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import Toast from "@Glibs/ux/toast/toast";
+import Agent from "@Glibs/actors/agent/agent";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -42,6 +43,7 @@ export class ThreeFactory {
     tree: TreeMaker
     wind: Wind
     trainer?: Training
+    agent?: Agent
     monster: Monsters
     food: Food[] = []
     modelStore = new ModelStore(this.eventCtrl)
@@ -75,12 +77,29 @@ export class ThreeFactory {
             }
         })
 
-        this.titleScreen = new TitleScreen("AiTrainer", [
+        this.titleScreen = new TitleScreen("Monster<br>Trainer", [
             new MenuItem("Start", () => {
-                this.titleScreen.Dispose()
-                this.bar.RenderHTML()
-                this.uiTexter.RenderHTML()
-                this.gamecenter.ChangeMode("playmode")
+                this.titleScreen.SubMenuShow([
+                    new MenuItem("Play", () => {
+                        if (!this.modelStore.model) {
+                            this.eventCtrl.SendEventMessage(EventTypes.Toast, "Notice", "Model Card is Empty")
+                            return
+                        }
+                        this.titleScreen.Dispose()
+                        this.bar.RenderHTML()
+                        this.uiTexter.RenderHTML()
+                        this.gamecenter.ChangeMode("play")
+                    }),
+                    new MenuItem("Training", () => {
+                        this.titleScreen.Dispose()
+                        this.bar.RenderHTML()
+                        this.uiTexter.RenderHTML()
+                        this.gamecenter.ChangeMode("training")
+                    }),
+                    new MenuItem("Multi Play", () => {
+                        this.eventCtrl.SendEventMessage(EventTypes.Toast, "Notics", "Not Implemented yet")
+                    })
+                ])
             }),
             new MenuItem("Load Ai Card", async () => {
                 this.dialog.RenderHtml("Load Ai Card", await this.modelStore.GetModelListElement())
@@ -150,8 +169,27 @@ export class ThreeFactory {
         nonglowfn?.(this.wind.mesh)
         nonglowfn?.(this.player.Meshs)
         //this.tree.models.forEach((m) => { nonglowfn?.(m.Meshs) })
+        this.gamecenter.RegisterGameMode("play",
+            new PlayState(this.game, [
+                this.player.Meshs,
+                this.floor.Meshs,
+                this.wind.mesh,
+                this.light,
+            ], {
+                initCall: async () => {
+                    if (!this.modelStore.model) throw new Error("undefined model");
 
-        this.gamecenter.RegisterGameMode("playmode",
+                    const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
+                    if (!mon) throw new Error("undefined monster");
+                    nonglowfn?.(mon.monModel.Meshs)
+                    this.agent = new Agent(this.eventCtrl, this.modelStore.model, this.player, 
+                        [mon.monModel], [...this.food])
+                    this.agent.Start()
+                    this.playerCtrl.Immortal = false
+                    this.playerCtrl.Enable = true
+                }
+            }))
+        this.gamecenter.RegisterGameMode("training",
             new PlayState(this.game, [
                 this.player.Meshs,
                 this.floor.Meshs,
@@ -162,8 +200,8 @@ export class ThreeFactory {
                     const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
                     if (!mon) throw new Error("undefined monster");
                     nonglowfn?.(mon.monModel.Meshs)
-                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, [mon.monModel], [...this.food], 
-                        { timeScale: this.timeScale })
+                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, 
+                        [mon.monModel], [...this.food], { timeScale: this.timeScale })
                     this.trainer.Start()
                     this.playerCtrl.Enable = true
                 }
