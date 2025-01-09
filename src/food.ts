@@ -27,8 +27,10 @@ export default class Food extends PhysicsObject implements ILoop {
        if(this.player.Pos.distanceTo(this.Pos) < 1.5) {
            this.eventCtrl.SendEventMessage(EventTypes.Attack + "aiagent", [{
             type: AttackType.Heal,
+            callback: () => {
+                this.Pos.set(THREE.MathUtils.randInt(-20, 20), 0, THREE.MathUtils.randInt(-20, 20))
+            }
         }])
-        this.Pos.set(THREE.MathUtils.randInt(-20, 20), 0, THREE.MathUtils.randInt(-20, 20))
        }
     }
 }

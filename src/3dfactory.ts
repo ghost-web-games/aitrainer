@@ -9,7 +9,7 @@ import { Wind } from "@Glibs/world/wind/wind";
 import IEventController from "@Glibs/interface/ievent";
 import { InvenFactory } from "@Glibs/inventory/invenfactory";
 import { TreeMaker } from "@Glibs/world/fluffytree/treemaker";
-import Training from "@Glibs/actors/agent/trainer";
+import Trainer from "@Glibs/actors/agent/trainer";
 import { MonsterDb } from "@Glibs/types/monsterdb";
 import { Monsters } from "@Glibs/actors/monsters/monsters";
 import { MonsterId } from "@Glibs/types/monstertypes";
@@ -19,7 +19,7 @@ import GameCenter from "@Glibs/systems/gamecenter/gamecenter";
 import PlayState from "@Glibs/systems/gamecenter/playstate";
 import MenuState from "@Glibs/systems/gamecenter/menustate";
 import LolliBar from "@Glibs/ux/progress/lollibar";
-import UiTexter from "./uitexter";
+import UiTrainerHelper from "./uitrainerhelper";
 import WeelLoader from "@Glibs/ux/loading/loading";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import TitleScreen from "@Glibs/ux/titlescreen/titlescreen";
@@ -29,6 +29,7 @@ import ModelStore from "@Glibs/actors/agent/modelstore";
 import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import Toast from "@Glibs/ux/toast/toast";
 import Agent from "@Glibs/actors/agent/agent";
+import TrainerX from "@Glibs/actors/agent/trainerx";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -42,7 +43,6 @@ export class ThreeFactory {
     floor: Floor
     tree: TreeMaker
     wind: Wind
-    trainer?: Training
     agent?: Agent
     monster: Monsters
     food: Food[] = []
@@ -56,7 +56,7 @@ export class ThreeFactory {
     settings = new Setting()
 
     bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
-    uiTexter = new UiTexter(this.eventCtrl, this.dialog)
+    uiTexter = new UiTrainerHelper(this.eventCtrl, this.dialog)
     titleScreen: TitleScreen
     timeScale = 1
 
@@ -200,9 +200,11 @@ export class ThreeFactory {
                     const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
                     if (!mon) throw new Error("undefined monster");
                     nonglowfn?.(mon.monModel.Meshs)
-                    this.trainer = new Training(this.eventCtrl, this.modelStore, this.player, 
+                    // const trainer = new Trainer(this.eventCtrl, this.modelStore, this.player, 
+                    //     [mon.monModel], [...this.food], { timeScale: this.timeScale })
+                    const trainer = new TrainerX(this.eventCtrl, this.modelStore, this.player,
                         [mon.monModel], [...this.food], { timeScale: this.timeScale })
-                    this.trainer.Start()
+                    trainer.Start()
                     this.playerCtrl.Enable = true
                 }
             }))

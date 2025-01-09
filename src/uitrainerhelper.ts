@@ -5,7 +5,7 @@ import { EventTypes, UiInfoType } from "@Glibs/types/globaltypes";
 import { AttackOption, AttackType } from "@Glibs/types/playertypes";
 import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 
-export default class UiTexter {
+export default class UiTrainerHelper {
     apples = 0
     timeScale = 1
     setting = new Setting()
