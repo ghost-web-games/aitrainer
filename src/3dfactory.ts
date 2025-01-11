@@ -30,6 +30,8 @@ import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import Toast from "@Glibs/ux/toast/toast";
 import Agent from "@Glibs/actors/agent/agent";
 import TrainerX from "@Glibs/actors/agent/trainerx";
+import { SkyBoxAllTime } from "@Glibs/world/sky/skyboxalltime";
+import Spinning from "@Glibs/ux/loading/spinning";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -49,8 +51,10 @@ export class ThreeFactory {
     modelStore = new ModelStore(this.eventCtrl)
     alarm = new Alarm(this.eventCtrl)
     toast = new Toast(this.eventCtrl)
+    sky = new SkyBoxAllTime(this.light)
 
     loading = new WeelLoader(this.eventCtrl)
+    spin = new Spinning(this.eventCtrl)
     gamecenter = new GameCenter()
     dialog = new BootModal()
     settings = new Setting()
@@ -138,8 +142,8 @@ export class ThreeFactory {
         this.titleScreen.RenderHTML()
     }
     async FoodLoad() {
-        for (let i = 0; i < 10; i++) {
-            this.food.push(new Food(this.loader, this.loader.AppleAsset, this.player, this.eventCtrl, this.game))
+        for (let i = 0; i < 100; i++) {
+            this.food.push(new Food(this.loader.AppleAsset, this.player, this.eventCtrl))
         }
         const ret = await Promise.all(
             this.food.map(async (f) => {
@@ -163,6 +167,8 @@ export class ThreeFactory {
             nonglowfn?.(f.Meshs)
             this.game.add(f.Meshs)
         })
+        nonglowfn?.(this.sky)
+        this.game.add(this.sky)
 
         nonglowfn?.(this.player.Meshs)
         nonglowfn?.(this.floor.Meshs)

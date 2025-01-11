@@ -15,7 +15,7 @@ export default class UiTrainerHelper {
     ) {
         eventCtrl.SendEventMessage(EventTypes.UiInfo, UiInfoType.LolliBar, 0, 100)
         eventCtrl.RegisterEventListener(EventTypes.TimeCtrl, (scale: number) => {
-            this.timeScale = scale
+            if (scale) this.timeScale = scale
         })
         const domId = this.setting.addOption("With Download", { 
             type: OptType.Switches
@@ -49,7 +49,7 @@ export default class UiTrainerHelper {
         domSetting.onclick = () => {
             this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, 0)
             this.dialog.RenderHtml("Settings", this.setting.GetElements(), {
-                event: () => {
+                close: () => {
                     this.eventCtrl.SendEventMessage(EventTypes.TimeCtrl, this.timeScale)
             }})
             this.dialog.show()
