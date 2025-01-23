@@ -5,6 +5,7 @@ import { IAsset } from "@Glibs/loader/iasset";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import { AttackType } from "@Glibs/types/playertypes";
 
+const range = 100
 
 export default class Food extends PhysicsObject implements ILoop {
     constructor(
@@ -18,14 +19,14 @@ export default class Food extends PhysicsObject implements ILoop {
     async Loader(name: string) {
         const [meshs, _exist] = await this.asset.UniqModel(name)
         this.meshs = meshs
-        this.Pos.set(THREE.MathUtils.randInt(-150, 150), 0, THREE.MathUtils.randInt(-150, 150))
+        this.Pos.set(THREE.MathUtils.randInt(-range, range), 0, THREE.MathUtils.randInt(-range, range))
     }
     update(): void {
        if(this.player.Pos.distanceTo(this.Pos) < 1.5) {
            this.eventCtrl.SendEventMessage(EventTypes.Attack + "aiagent", [{
             type: AttackType.Heal,
             callback: () => {
-                this.Pos.set(THREE.MathUtils.randInt(-150, 150), 0, THREE.MathUtils.randInt(-150, 150))
+                this.Pos.set(THREE.MathUtils.randInt(-range, range), 0, THREE.MathUtils.randInt(-range, range))
             }
         }])
        }

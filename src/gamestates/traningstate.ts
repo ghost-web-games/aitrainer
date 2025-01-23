@@ -1,0 +1,55 @@
+import * as THREE from "three";
+import ModelStore from '@Glibs/actors/agent/modelstore';
+import { Monsters } from '@Glibs/actors/monsters/monsters';
+import { PlayerCtrl } from '@Glibs/actors/player/playerctrl';
+import IEventController from '@Glibs/interface/ievent';
+import { IPhysicsObject } from '@Glibs/interface/iobject';
+import { IGameMode } from '@Glibs/systems/gamecenter/gamecenter'
+import { IPostPro } from '@Glibs/systems/postprocess/postpro'
+import { EventTypes } from '@Glibs/types/globaltypes';
+import Food from '../food';
+import { MonsterId } from '@Glibs/types/monstertypes';
+import TrainerX from "@Glibs/actors/agent/trainerx";
+
+export default class TraningState implements IGameMode {
+    trainer?: TrainerX
+    constructor(
+        private scene: THREE.Scene,
+        private eventCtrl: IEventController,
+        private player: IPhysicsObject,
+        private playerCtrl: PlayerCtrl,
+        private modelStore: ModelStore,
+        private monster: Monsters,
+        private nonglowfn: Function,
+        private timeScale: number,
+        private food: Food[],
+        private objs: THREE.Object3D[] | THREE.Group[] | THREE.Mesh[] = [],
+    ) { 
+
+    }
+    async Init() {
+        this.eventCtrl.SendEventMessage(EventTypes.Spinner, true)
+        const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
+        if (!mon) throw new Error("undefined monster");
+        this.nonglowfn(mon.monModel.Meshs)
+        this.trainer = new TrainerX(this.eventCtrl, this.modelStore, this.player,
+            [mon.monModel], [...this.food], { timeScale: this.timeScale, step: 100 })
+        this.trainer.Start()
+        this.playerCtrl.Enable = true
+        this.eventCtrl.SendEventMessage(EventTypes.Spinner, false)
+
+        this.scene.add(...this.objs)
+    }
+    Uninit(): void {
+        this.monster.ReleaseMonster()
+        this.trainer?.Stop()
+        this.playerCtrl.Enable = false
+
+        this.objs.forEach((obj) => {
+            this.scene.remove(obj)
+        })
+    }
+    Renderer(r: IPostPro, delta: number): void {
+       r.render(delta)
+    }
+}

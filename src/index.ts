@@ -17,11 +17,10 @@ class Index {
   effector = new Effector(this.scene)
   pp: IPostPro
   fab = new ThreeFactory(this.eventCtrl, this.scene)
-  controls: OrbitControls
   light = new DefaultLights(this.scene)
 
   constructor() {
-    this.camera = new Camera(this.canvas, this.eventCtrl, this.fab.player)
+    this.camera = new Camera(this.canvas, this.eventCtrl, this.fab.player, this.renderer.domElement)
     this.camera.position.set(15, 15, 15)
     // Renderer Start
     THREE.ColorManagement.enabled = true
@@ -34,7 +33,6 @@ class Index {
     const pixel = (window.devicePixelRatio >= 2) ? window.devicePixelRatio / 2 : window.devicePixelRatio
     this.renderer.setPixelRatio(pixel);
     document.body.appendChild(this.renderer.domElement)
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     this.pp = new Postpro(this.scene, this.camera, this.renderer)
     // 4. 창 크기 변경 이벤트 리스너 추가
@@ -48,7 +46,7 @@ class Index {
 
   async init() {
     const nonglowfn = (mesh: any) => { this.pp.setNonGlow(mesh) }
-    await this.fab.init(nonglowfn)
+    await this.fab.init(this.camera, nonglowfn)
   }
 
   clock = new THREE.Clock()
@@ -61,7 +59,6 @@ class Index {
   render() {
     const delta = this.clock.getDelta()
     this.fab.gamecenter.Renderer(this.pp, delta)
-    this.controls.update()
     this.canvas.update()
     this.fab.gphysics.update()
   }
