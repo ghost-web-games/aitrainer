@@ -18,11 +18,16 @@ export default class ParamDialog {
     dialog = new BootModal()
     settings = new Setting()
     timeScale = 1
+    selectDom?: HTMLSelectElement
 
     constructor(
         private eventCtrl: IEventController,
         private modelStore: ModelStore,
     ) {
+        eventCtrl.RegisterEventListener(EventTypes.TimeCtrl, (scale: number) => {
+            if (scale) this.timeScale = scale
+            if (this.selectDom) this.selectDom.value = scale.toString()
+        })
         this.settings.addOption("Randomness", { type: OptType.Inputs, value: [0.995] })
         this.settings.addLine()
         this.settings.addOption("Auto Save",  { type: OptType.Switches })
@@ -31,6 +36,7 @@ export default class ParamDialog {
             type: OptType.Selects, name: "_speed", value: [1, 2, 3, 4, 5, 10], onchange: (opt: Options) => {
                 const dom = document.getElementById(opt.uniqId) as HTMLSelectElement
                 if(!dom) return
+                this.selectDom = dom
                 this.timeScale = Number(dom.value)
                 eventCtrl.SendEventMessage(EventTypes.TimeCtrl, this.timeScale)
             }

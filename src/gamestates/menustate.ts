@@ -16,6 +16,7 @@ import { Player } from "@Glibs/actors/player/player";
 import { Loader } from "@Glibs/loader/loader";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import ParamDialog from "../dialogs/paramdlg";
+import { PlayerCtrl } from "@Glibs/actors/player/playerctrl";
 
 export default class MenuState implements IGameMode {
     get Objects() { return this.objs }
@@ -33,6 +34,7 @@ export default class MenuState implements IGameMode {
         private eventCtrl: IEventController,
         private loader: Loader,
         private player: Player,
+        private playerCtrl: PlayerCtrl,
         private modelStore: ModelStore,
         private scene: THREE.Scene,
         private camera: Camera,
@@ -84,6 +86,8 @@ export default class MenuState implements IGameMode {
     async Init() {
         this.camera.controls.enabled = false
         this.camera.lookTarget = false
+        this.player.Pos.set(0, 0, 0)
+        this.playerCtrl.reset()
 
         document.body.appendChild(this.startDom)
         this.cdom.Show()

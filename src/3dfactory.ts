@@ -122,7 +122,6 @@ export class ThreeFactory {
             new PlayState(this.eventCtrl, this.player, this.playerCtrl,
                 this.modelStore, this.monster, nonglowfn!, this.agent!, this.food,
                 [
-                    this.player.Meshs,
                     this.wind.mesh,
                     this.floor,
                     this.light,
@@ -135,9 +134,8 @@ export class ThreeFactory {
             ]))
         this.gamecenter.RegisterGameMode("training",
             new TraningState(this.eventCtrl, this.player, this.playerCtrl,
-                this.modelStore, this.monster, nonglowfn!, this.food,
+                this.modelStore, this.monster, nonglowfn!, camera, this.food,
                 [
-                    this.player.Meshs,
                     this.wind.mesh,
                     this.floor,
                     this.light,
@@ -150,7 +148,6 @@ export class ThreeFactory {
             ]))
         this.gamecenter.RegisterGameMode("titlemode",
             new TitleState(this.eventCtrl, [
-                this.player.Meshs,
                 this.wind.mesh,
                 this.floor,
                 this.light,
@@ -162,9 +159,8 @@ export class ThreeFactory {
                 this.player,
             ]))
         this.gamecenter.RegisterGameMode("menumode",
-            new MenuState(this.eventCtrl, this.loader, this.player, this.modelStore, this.game, camera,
+            new MenuState(this.eventCtrl, this.loader, this.player, this.playerCtrl, this.modelStore, this.game, camera,
                 nonglowfn!, [
-                this.player.Meshs,
                 this.floor,
                 this.light,
             ], [], [

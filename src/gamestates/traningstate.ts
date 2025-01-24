@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { gsap } from "gsap";
 import ModelStore from '@Glibs/actors/agent/modelstore';
 import { Monsters } from '@Glibs/actors/monsters/monsters';
 import { PlayerCtrl } from '@Glibs/actors/player/playerctrl';
@@ -10,15 +11,15 @@ import { EventTypes, UiInfoType } from '@Glibs/types/globaltypes';
 import Food from '../food';
 import { MonsterId } from '@Glibs/types/monstertypes';
 import TrainerX from "@Glibs/actors/agent/trainerx";
-import UiTrainerHelper from "../uitrainerhelper";
 import BootModal from "@Glibs/ux/dialog/bootmodal";
-import MenuGroup, { IMenuItem } from "@Glibs/ux/menuicons/menugroup";
+import MenuGroup from "@Glibs/ux/menuicons/menugroup";
 import StatusBar from "@Glibs/ux/menuicons/statusbar";
 import { Icons } from "@Glibs/types/icontypes";
 import { AttackOption, AttackType } from "@Glibs/types/playertypes";
 import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import MenuIcon from "@Glibs/ux/menuicons/menuicon";
 import { TrainingParam } from "@Glibs/types/agenttypes";
+import { Camera } from "@Glibs/systems/camera/camera";
 
 export default class TraningState implements IGameMode {
     trainer?: TrainerX
@@ -40,6 +41,7 @@ export default class TraningState implements IGameMode {
         private modelStore: ModelStore,
         private monster: Monsters,
         private nonglowfn: Function,
+        private camera: Camera,
         private food: Food[],
         private objs: THREE.Object3D[] | THREE.Group[] | THREE.Mesh[] = [],
         private taskObj: ILoop[] = [],
@@ -65,8 +67,8 @@ export default class TraningState implements IGameMode {
 
         this.sdom = new MenuGroup(document.body, { height: "45px", top: "-10px", opacity: "0" })
         const status = this.sdom.addMenu(new StatusBar({ icon: Icons.Lightning, plusIcon: true, lolliBar: true }))
-        const apple = this.sdom.addMenu(new StatusBar({ icon: Icons.Apple }))
-        const ep = this.sdom.addMenu(new StatusBar({ icon: Icons.Stats }))
+        const apple = this.sdom.addMenu(new StatusBar({ icon: Icons.Apple, value: 0 }))
+        const ep = this.sdom.addMenu(new StatusBar({ icon: Icons.Stats, value: 0 }))
         
 
         eventCtrl.RegisterEventListener(EventTypes.UiInfo, (type: UiInfoType, value: number, max: number) => {
@@ -125,6 +127,12 @@ export default class TraningState implements IGameMode {
         this.trainer.Start()
         this.playerCtrl.Enable = true
         this.eventCtrl.SendEventMessage(EventTypes.Spinner, false)
+
+        gsap.to(this.camera.position, {
+            x: 15, y: 15, z: 15, duration: 1, onComplete: () => {
+                this.camera.lookAt(this.player.Pos)
+            }
+        })
     }
     Uninit(): void {
         this.sdom.Hide()
