@@ -42,7 +42,7 @@ export default class ParamDialog {
             }
         })
         const woodModal = new WoodModal()
-        woodModal.RenderHtml("Settings", "시스템을 설정합니다.")
+        woodModal.RenderHtml("Training", "AI 설정을 조정합니다.")
 
 
         const tap = new TapButton(document.body, {
