@@ -3,7 +3,7 @@ import Agent from '@Glibs/actors/agent/agent';
 import ModelStore from '@Glibs/actors/agent/modelstore';
 import { Monsters } from '@Glibs/actors/monsters/monsters';
 import { PlayerCtrl } from '@Glibs/actors/player/playerctrl';
-import IEventController from '@Glibs/interface/ievent';
+import IEventController, { ILoop } from '@Glibs/interface/ievent';
 import { IPhysicsObject } from '@Glibs/interface/iobject';
 import { IGameMode } from '@Glibs/systems/gamecenter/gamecenter'
 import { IPostPro } from '@Glibs/systems/postprocess/postpro'
@@ -12,8 +12,10 @@ import Food from '../food';
 import { MonsterId } from '@Glibs/types/monstertypes';
 
 export default class PlayState implements IGameMode {
+    get Objects() { return this.objs }
+    get TaskObj() { return this.taskObj }
+    get Physics() { return this.phyObj }
     constructor(
-        private scene: THREE.Scene,
         private eventCtrl: IEventController,
         private player: IPhysicsObject,
         private playerCtrl: PlayerCtrl,
@@ -23,6 +25,8 @@ export default class PlayState implements IGameMode {
         private agent: Agent,
         private food: Food[],
         private objs: THREE.Object3D[] | THREE.Group[] | THREE.Mesh[] = [],
+        private taskObj: ILoop[] = [],
+        private phyObj: IPhysicsObject[] = [],
     ) { 
 
     }
@@ -39,17 +43,11 @@ export default class PlayState implements IGameMode {
         this.playerCtrl.Immortal = false
         this.playerCtrl.Enable = true
         this.eventCtrl.SendEventMessage(EventTypes.Spinner, false)
-
-        this.scene.add(...this.objs)
     }
     Uninit(): void {
         this.monster.ReleaseMonster()
         this.agent.Stop()
         this.playerCtrl.Enable = false
-
-        this.objs.forEach((obj) => {
-            this.scene.remove(obj)
-        })
     }
     Renderer(r: IPostPro, delta: number): void {
        r.render(delta)

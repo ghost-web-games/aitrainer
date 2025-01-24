@@ -1,6 +1,7 @@
 import ModelStore from "@Glibs/actors/agent/modelstore"
 import { GameButton } from "@Glibs/ux/buttons/gamebutton"
 import TapButton from "@Glibs/ux/buttons/tapbutton"
+import BootModal from "@Glibs/ux/dialog/bootmodal"
 import WoodModal from "@Glibs/ux/dialog/woodmodal"
 
 export enum SystemEvent {
@@ -11,6 +12,7 @@ export enum SystemEvent {
 
 export default class SystemDialog {
     tap: TapButton
+    dialog = new BootModal()
 
     constructor(
         private modelStore: ModelStore,
@@ -27,11 +29,21 @@ export default class SystemDialog {
         tap.addChild(woodModal.GetContentElement())
 
         const loadBtn = new GameButton()
-        loadBtn.RenderHtml({ title:"Load", click: async () => { } })
+        loadBtn.RenderHtml({
+            title: "Load", click: async () => {
+                this.dialog.RenderHtml("Load Ai Card", await this.modelStore.GetModelListElement())
+                this.dialog.show()
+            }
+        })
         woodModal.addChild(loadBtn.dom)
 
         const downBtn = new GameButton()
-        downBtn.RenderHtml({ title: "Download", click: () => { tap.hide(); } })
+        downBtn.RenderHtml({
+            title: "Upload", click: () => {
+                this.dialog.RenderHtml("Upload Ai Card", this.modelStore.GetUploadElement())
+                this.dialog.show()
+            }
+        })
         woodModal.addChild(downBtn.dom)
         this.tap = tap
     }

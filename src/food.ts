@@ -22,13 +22,13 @@ export default class Food extends PhysicsObject implements ILoop {
         this.Pos.set(THREE.MathUtils.randInt(-range, range), 0, THREE.MathUtils.randInt(-range, range))
     }
     update(): void {
-       if(this.player.Pos.distanceTo(this.Pos) < 1.5) {
-           this.eventCtrl.SendEventMessage(EventTypes.Attack + "aiagent", [{
-            type: AttackType.Heal,
-            callback: () => {
-                this.Pos.set(THREE.MathUtils.randInt(-range, range), 0, THREE.MathUtils.randInt(-range, range))
-            }
-        }])
-       }
+        if (this.player.Pos.distanceTo(this.Pos) < 1.5) {
+            this.eventCtrl.SendEventMessage(EventTypes.Attack + "aiagent", [{
+                type: AttackType.Heal,
+                callback: () => {
+                    this.Pos.set(THREE.MathUtils.randInt(-range, range), 0, THREE.MathUtils.randInt(-range, range))
+                }
+            }])
+        }
     }
 }

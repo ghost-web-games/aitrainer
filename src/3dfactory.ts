@@ -14,7 +14,6 @@ import { Monsters } from "@Glibs/actors/monsters/monsters";
 import Food from "./food";
 import { Alarm } from "@Glibs/systems/alarm/alarm";
 import GameCenter from "@Glibs/systems/gamecenter/gamecenter";
-import LolliBar from "@Glibs/ux/progress/lollibar";
 import WeelLoader from "@Glibs/ux/loading/loading";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import ModelStore from "@Glibs/actors/agent/modelstore";
@@ -27,6 +26,8 @@ import TraningState from "./gamestates/traningstate";
 import MenuState from "./gamestates/menustate";
 import TitleState from "./gamestates/titlestate";
 import { Camera } from "@Glibs/systems/camera/camera";
+import FontLoader from "@Glibs/ux/text/fontloader";
+import { FontType } from "@Glibs/ux/text/fonttypes";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -46,13 +47,14 @@ export class ThreeFactory {
     modelStore = new ModelStore(this.eventCtrl)
     alarm = new Alarm(this.eventCtrl)
     toast = new Toast(this.eventCtrl)
-    sky = new SkyBoxAllTime(this.light)
+    sky = new SkyBoxAllTime(this.light, { daytime: 0 })
+
+    font = new FontLoader()
 
     loading = new WeelLoader(this.eventCtrl)
     spin = new Spinning(this.eventCtrl)
-    gamecenter = new GameCenter(this.eventCtrl)
+    gamecenter = new GameCenter(this.eventCtrl, this.game)
 
-    bar = new LolliBar(this.eventCtrl, {initValue: 0.0})
     timeScale = 1
 
     constructor(
@@ -69,6 +71,7 @@ export class ThreeFactory {
         this.monster = new Monsters(this.loader, this.eventCtrl, this.game, this.player, [], [], this.gphysics, this.monDb)
         this.monster.Enable = true
 
+        this.font.fontCss(FontType.Coiny)
     }
     async init(camera: Camera, nonglowfn?: Function) {
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 10)
@@ -102,9 +105,10 @@ export class ThreeFactory {
         return ret
     }
     async InitScene(camera: Camera, nonglowfn?: Function) {
+        const foods: THREE.Object3D[] = []
         this.food.forEach((f) => {
             nonglowfn?.(f.Meshs)
-            this.game.add(f.Meshs)
+            foods.push(f.Meshs)
         })
         nonglowfn?.(this.sky)
         this.game.add(this.sky)
@@ -115,35 +119,57 @@ export class ThreeFactory {
         nonglowfn?.(this.player.Meshs)
         //this.tree.models.forEach((m) => { nonglowfn?.(m.Meshs) })
         this.gamecenter.RegisterGameMode("play",
-            new PlayState(this.game, this.eventCtrl, this.player, this.playerCtrl,
+            new PlayState(this.eventCtrl, this.player, this.playerCtrl,
                 this.modelStore, this.monster, nonglowfn!, this.agent!, this.food,
                 [
                     this.player.Meshs,
-                    this.floor.Meshs,
                     this.wind.mesh,
+                    this.floor,
                     this.light,
-                ]))
+                    ...foods,
+                ], [
+                this.wind,
+                ...this.food,
+            ], [
+                this.player,
+            ]))
         this.gamecenter.RegisterGameMode("training",
-            new TraningState(this.game, this.eventCtrl, this.player, this.playerCtrl,
-                this.modelStore, this.monster, nonglowfn!, this.timeScale, this.food,
+            new TraningState(this.eventCtrl, this.player, this.playerCtrl,
+                this.modelStore, this.monster, nonglowfn!, this.food,
                 [
-                this.player.Meshs,
-                this.floor.Meshs,
-                this.wind.mesh,
-                this.light,
+                    this.player.Meshs,
+                    this.wind.mesh,
+                    this.floor,
+                    this.light,
+                    ...foods,
+                ], [
+                this.wind,
+                ...this.food,
+            ], [
+                this.player,
             ]))
         this.gamecenter.RegisterGameMode("titlemode",
-            new TitleState(this.game, this.eventCtrl, this.modelStore, this.timeScale, [
+            new TitleState(this.eventCtrl, [
                 this.player.Meshs,
-                this.floor.Meshs,
                 this.wind.mesh,
+                this.floor,
                 this.light,
+                ...foods,
+            ], [
+                this.wind,
+                ...this.food
+            ], [
+                this.player,
             ]))
         this.gamecenter.RegisterGameMode("menumode",
-            new MenuState(this.game, this.eventCtrl, this.player, this.modelStore, this.timeScale, camera, [
+            new MenuState(this.eventCtrl, this.loader, this.player, this.modelStore, this.game, camera,
+                nonglowfn!, [
                 this.player.Meshs,
-                this.floor.Meshs,
+                this.floor,
                 this.light,
+            ], [], [
+                this.player,
+
             ]))
         this.eventCtrl.SendEventMessage(EventTypes.GameCenter, "titlemode")
     }
