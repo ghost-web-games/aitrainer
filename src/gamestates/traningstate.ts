@@ -20,6 +20,7 @@ import Setting, { OptType, Options } from "@Glibs/ux/settings/settings";
 import MenuIcon from "@Glibs/ux/menuicons/menuicon";
 import { TrainingParam } from "@Glibs/types/agenttypes";
 import { Camera } from "@Glibs/systems/camera/camera";
+import { gui } from "@Glibs/helper/helper";
 
 export default class TraningState implements IGameMode {
     trainer?: TrainerX
@@ -46,7 +47,7 @@ export default class TraningState implements IGameMode {
         private objs: THREE.Object3D[] | THREE.Group[] | THREE.Mesh[] = [],
         private taskObj: ILoop[] = [],
         private phyObj: IPhysicsObject[] = [],
-    ) { 
+    ) {
         this.cdom = new MenuGroup(document.body, { top: "10%", left: "0px", opacity: "0.5", vertical: true })
         this.cdom.addMenu(new MenuIcon({
             icon: Icons.Setting, click: () => {
@@ -63,13 +64,14 @@ export default class TraningState implements IGameMode {
             icon: Icons.Pause, click: () => {
                 this.eventCtrl.SendEventMessage(EventTypes.GameCenter, "menumode")
 
-        }}))
+            }
+        }))
 
         this.sdom = new MenuGroup(document.body, { height: "45px", top: "-10px", opacity: "0" })
-        const status = this.sdom.addMenu(new StatusBar({ icon: Icons.Lightning, plusIcon: true, lolliBar: true }))
+        const status = this.sdom.addMenu(new StatusBar({ icon: Icons.Lightning, lolliBar: true }))
         const apple = this.sdom.addMenu(new StatusBar({ icon: Icons.Apple, value: 0 }))
         const ep = this.sdom.addMenu(new StatusBar({ icon: Icons.Stats, value: 0 }))
-        
+
 
         eventCtrl.RegisterEventListener(EventTypes.UiInfo, (type: UiInfoType, value: number, max: number) => {
             const bar = (status as StatusBar).lbar
@@ -119,7 +121,7 @@ export default class TraningState implements IGameMode {
         this.sdom.Show()
         this.cdom.Show()
         this.eventCtrl.SendEventMessage(EventTypes.Spinner, true)
-        const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0, 5))
+        const mon = await this.monster.CreateMonster(MonsterId.Zombie, false, new THREE.Vector3(5, 0.5, 5))
         if (!mon) throw new Error("undefined monster");
         this.nonglowfn(mon.monModel.Meshs)
         this.trainer = new TrainerX(this.eventCtrl, this.modelStore, this.player,
@@ -127,12 +129,17 @@ export default class TraningState implements IGameMode {
         this.trainer.Start()
         this.playerCtrl.Enable = true
         this.eventCtrl.SendEventMessage(EventTypes.Spinner, false)
+        this.camera.controls.enabled = true
+        this.camera.lookTarget = false
+        this.camera.lookAt(this.player.Pos)
 
-        gsap.to(this.camera.position, {
-            x: 15, y: 15, z: 15, duration: 1, onComplete: () => {
-                this.camera.lookAt(this.player.Pos)
-            }
-        })
+        const timeline = gsap.timeline()
+        timeline.to(this.camera.position, { x: 0, y: 35, z: 40, duration: 1 })
+        timeline.to(this.look, { x: 0, y: 0, z: 10 }, "<")
+    }
+    look = new THREE.Vector3()
+    checkCamera() {
+        this.camera.lookAt(this.look)
     }
     Uninit(): void {
         this.sdom.Hide()
@@ -142,6 +149,7 @@ export default class TraningState implements IGameMode {
         this.playerCtrl.Enable = false
     }
     Renderer(r: IPostPro, delta: number): void {
-       r.render(delta)
+        this.checkCamera()
+        r.render(delta)
     }
 }

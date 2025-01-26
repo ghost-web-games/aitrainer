@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { Loader } from "@Glibs/loader/loader";
 import { GPhysics } from "@Glibs/world/physics/gphysics";
-import { Floor } from "./floor";
 import { Light } from "./common/light";
 import { Player } from "@Glibs/actors/player/player";
 import { PlayerCtrl } from "@Glibs/actors/player/playerctrl";
@@ -28,19 +27,26 @@ import TitleState from "./gamestates/titlestate";
 import { Camera } from "@Glibs/systems/camera/camera";
 import FontLoader from "@Glibs/ux/text/fontloader";
 import { FontType } from "@Glibs/ux/text/fonttypes";
+import { Canvas } from "@Glibs/systems/event/canvas";
+import { Postpro } from "@Glibs/systems/postprocess/postpro";
+import { Ocean } from "@Glibs/world/ocean/ocean";
+import { FloorHex } from "./floorhex";
 
 export class ThreeFactory {
     loader = new Loader()
+    // light = new Light()
     light = new Light()
     monDb = new MonsterDb()
     invenFab: InvenFactory
+    camera: Camera
 
     gphysics: GPhysics
     player: Player
-    playerCtrl : PlayerCtrl
-    floor: Floor
+    playerCtrl: PlayerCtrl
+    floor: FloorHex
     tree: TreeMaker
     wind: Wind
+    ocean: Ocean
     agent?: Agent
     monster: Monsters
     food: Food[] = []
@@ -54,37 +60,48 @@ export class ThreeFactory {
     loading = new WeelLoader(this.eventCtrl)
     spin = new Spinning(this.eventCtrl)
     gamecenter = new GameCenter(this.eventCtrl, this.game)
+    pp: Postpro
+    nonglowfn: Function
 
     timeScale = 1
 
     constructor(
-        private eventCtrl: IEventController, 
+        private eventCtrl: IEventController,
         private game: THREE.Scene,
+        private canvas: Canvas,
+        private renderer: THREE.WebGLRenderer,
     ) {
         this.gphysics = new GPhysics(this.game, this.eventCtrl)
         this.invenFab = new InvenFactory(this.loader, this.eventCtrl)
         this.player = new Player(this.loader, this.loader.DogAsset, this.eventCtrl, this.game)
         this.playerCtrl = new PlayerCtrl(this.player, this.invenFab.inven, this.gphysics, this.eventCtrl, { immortal: true })
-        this.floor = new Floor(500)
+        this.floor = new FloorHex()
         this.tree = new TreeMaker(this.loader, eventCtrl, game)
+
+        this.camera = new Camera(this.canvas, this.eventCtrl, this.player, this.renderer.domElement)
+        this.pp = new Postpro(this.game, this.camera, this.renderer)
+        this.camera.position.set(15, 15, 15)
         this.wind = new Wind(this.eventCtrl)
+        this.nonglowfn = (mesh: any) => { this.pp.setNonGlow(mesh) }
+        this.ocean = new Ocean(this.eventCtrl)
+
         this.monster = new Monsters(this.loader, this.eventCtrl, this.game, this.player, [], [], this.gphysics, this.monDb)
         this.monster.Enable = true
 
         this.font.fontCss(FontType.Coiny)
     }
-    async init(camera: Camera, nonglowfn?: Function) {
+    async init() {
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 10)
         await this.GltfLoad()
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 40)
         await this.FoodLoad()
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 70)
-        await this.InitScene(camera, nonglowfn)
+        await this.InitScene()
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 90)
         this.eventCtrl.SendEventMessage(EventTypes.LoadingProgress, 100)
     }
     async FoodLoad() {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 5; i++) {
             this.food.push(new Food(this.loader.AppleAsset, this.player, this.eventCtrl))
         }
         const ret = await Promise.all(
@@ -104,23 +121,26 @@ export class ThreeFactory {
         })
         return ret
     }
-    async InitScene(camera: Camera, nonglowfn?: Function) {
+    async InitScene() {
         const foods: THREE.Object3D[] = []
         this.food.forEach((f) => {
-            nonglowfn?.(f.Meshs)
+            this.nonglowfn(f.Meshs)
             foods.push(f.Meshs)
         })
-        nonglowfn?.(this.sky)
+        this.nonglowfn(this.sky)
         this.game.add(this.sky)
 
-        nonglowfn?.(this.player.Meshs)
-        nonglowfn?.(this.floor.Meshs)
-        nonglowfn?.(this.wind.mesh)
-        nonglowfn?.(this.player.Meshs)
+        this.nonglowfn(this.ocean.mesh)
+        this.game.add(this.ocean.mesh)
+
+        this.nonglowfn(this.player.Meshs)
+        this.nonglowfn(this.floor.Meshs)
+        this.nonglowfn(this.wind.mesh)
+        this.nonglowfn(this.player.Meshs)
         //this.tree.models.forEach((m) => { nonglowfn?.(m.Meshs) })
         this.gamecenter.RegisterGameMode("play",
             new PlayState(this.eventCtrl, this.player, this.playerCtrl,
-                this.modelStore, this.monster, nonglowfn!, this.agent!, this.food,
+                this.modelStore, this.monster, this.nonglowfn!, this.agent!, this.food,
                 [
                     this.wind.mesh,
                     this.floor,
@@ -134,7 +154,7 @@ export class ThreeFactory {
             ]))
         this.gamecenter.RegisterGameMode("training",
             new TraningState(this.eventCtrl, this.player, this.playerCtrl,
-                this.modelStore, this.monster, nonglowfn!, camera, this.food,
+                this.modelStore, this.monster, this.nonglowfn!, this.camera, this.food,
                 [
                     this.wind.mesh,
                     this.floor,
@@ -159,8 +179,8 @@ export class ThreeFactory {
                 this.player,
             ]))
         this.gamecenter.RegisterGameMode("menumode",
-            new MenuState(this.eventCtrl, this.loader, this.player, this.playerCtrl, this.modelStore, this.game, camera,
-                nonglowfn!, [
+            new MenuState(this.eventCtrl, this.loader, this.player, this.playerCtrl, this.modelStore, this.game, this.camera,
+                this.nonglowfn!, [
                 this.floor,
                 this.light,
             ], [], [
@@ -168,5 +188,9 @@ export class ThreeFactory {
 
             ]))
         this.eventCtrl.SendEventMessage(EventTypes.GameCenter, "titlemode")
+    }
+    update(delta: number) {
+        this.gamecenter.Renderer(this.pp, delta)
+        this.gphysics.update()
     }
 }

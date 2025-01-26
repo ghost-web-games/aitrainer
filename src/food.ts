@@ -5,7 +5,7 @@ import { IAsset } from "@Glibs/loader/iasset";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import { AttackType } from "@Glibs/types/playertypes";
 
-const range = 100
+const range = 20
 
 export default class Food extends PhysicsObject implements ILoop {
     constructor(

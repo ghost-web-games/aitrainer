@@ -71,20 +71,21 @@ export default class MenuState implements IGameMode {
     }
     async changeDog() {
         this.scene.remove(this.player.Meshs)
-        await this.player.Loader(this.loader.DogAsset, new THREE.Vector3(0, 0, 0), "dog")
+        await this.player.Loader(this.loader.DogAsset, new THREE.Vector3(0, 1, 0), "dog")
         this.nonflowfn(this.player.Meshs)
         this.player.Visible = true
         this.scene.add(this.player.Meshs)
     }
     async changeCat() {
         this.scene.remove(this.player.Meshs)
-        await this.player.Loader(this.loader.CatAsset, new THREE.Vector3(0, 0, 0), "cat")
+        await this.player.Loader(this.loader.CatAsset, new THREE.Vector3(0, 1, 0), "cat")
         this.nonflowfn(this.player.Meshs)
         this.player.Visible = true
         this.scene.add(this.player.Meshs)
     }
     async Init() {
-        this.camera.controls.enabled = false
+        //this.camera.controls.enabled = false
+        this.camera.controls.enabled = true
         this.camera.lookTarget = false
         this.player.Pos.set(0, 0, 0)
         this.playerCtrl.reset()
