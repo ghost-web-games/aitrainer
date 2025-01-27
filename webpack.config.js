@@ -2,6 +2,7 @@
 // https://velog.io/@ssh1997/webpack-typescript-%EA%B0%9C%EB%B0%9C%ED%99%98%EA%B2%BD-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   entry: "./src/index.ts", // 번들링 시작 위치
@@ -23,7 +24,9 @@ module.exports = {
   },
   externals: {
     '@tensorflow/tfjs': 'tf', // tf는 글로벌 CDN에서 제공하는 이름
-    bootstrap: 'bootstrap',
+    '@tensorflow/tfjs-vis': 'tfvis', // tf는 글로벌 CDN에서 제공하는 이름
+    'bootstrap': 'bootstrap',
+    three: 'THREE',
   },
   module: {
     rules: [
@@ -57,11 +60,15 @@ module.exports = {
     alias: {
       "@Assets": path.resolve(__dirname, "assets"),
       "@Glibs": path.resolve(__dirname, "src/gsdk/src"),
-    }
+    },
+    mainFields: ['browser', 'module', 'main'], // 파일 우선 순위 설정
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html", // 템플릿 위치
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
     }),
   ],
   devServer: {

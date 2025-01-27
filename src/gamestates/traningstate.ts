@@ -139,6 +139,12 @@ export default class TraningState implements IGameMode {
     }
     look = new THREE.Vector3()
     checkCamera() {
+        const gap = this.player.Pos.x - this.camera.position.x
+        if(Math.abs(gap) > 4) {
+            const mv = (Math.abs(gap) - 4) * Math.sign(gap)
+            this.camera.position.x += mv
+            this.look.x += mv
+        }
         this.camera.lookAt(this.look)
     }
     Uninit(): void {
