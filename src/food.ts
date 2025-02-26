@@ -8,6 +8,7 @@ import { AttackType } from "@Glibs/types/playertypes";
 const range = 20
 
 export default class Food extends PhysicsObject implements ILoop {
+    LoopId = 0
     constructor(
         asset: IAsset,
         private player: IPhysicsObject,

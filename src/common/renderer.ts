@@ -5,6 +5,7 @@ import { EventTypes } from "@Glibs/types/globaltypes";
 import { Camera } from "@Glibs/systems/camera/camera";
 
 export class Renderer extends THREE.WebGLRenderer implements IViewer, ILoop {
+    LoopId = 0
 
     constructor(private camera: Camera, private scene: THREE.Scene, canvas: Canvas, eventCtrl: IEventController) {
         super({ /*alpha: true,*/ antialias: true })

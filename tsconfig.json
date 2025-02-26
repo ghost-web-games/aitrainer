@@ -110,6 +110,7 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "exclude": [
-    "src/gsdk/src/systems/postprocess/postpro2.ts"
+    "src/gsdk/src/systems/postprocess/postpro2.ts",
+    "src/gsdk/src/systems/qr"
   ]
 }

@@ -17,6 +17,7 @@ import { Loader } from "@Glibs/loader/loader";
 import { EventTypes } from "@Glibs/types/globaltypes";
 import ParamDialog from "../dialogs/paramdlg";
 import { PlayerCtrl } from "@Glibs/actors/player/playerctrl";
+import { Char } from "@Glibs/loader/assettypes";
 
 export default class MenuState implements IGameMode {
     get Objects() { return this.objs }
@@ -71,14 +72,14 @@ export default class MenuState implements IGameMode {
     }
     async changeDog() {
         this.scene.remove(this.player.Meshs)
-        await this.player.Loader(this.loader.DogAsset, new THREE.Vector3(0, 1, 0), "dog")
+        await this.player.Loader(this.loader.GetAssets(Char.CharAniDog), new THREE.Vector3(0, 1, 0), "dog")
         this.nonflowfn(this.player.Meshs)
         this.player.Visible = true
         this.scene.add(this.player.Meshs)
     }
     async changeCat() {
         this.scene.remove(this.player.Meshs)
-        await this.player.Loader(this.loader.CatAsset, new THREE.Vector3(0, 1, 0), "cat")
+        await this.player.Loader(this.loader.GetAssets(Char.CharAniCat), new THREE.Vector3(0, 1, 0), "cat")
         this.nonflowfn(this.player.Meshs)
         this.player.Visible = true
         this.scene.add(this.player.Meshs)

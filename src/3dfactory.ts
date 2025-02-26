@@ -31,6 +31,7 @@ import { Canvas } from "@Glibs/systems/event/canvas";
 import { Postpro } from "@Glibs/systems/postprocess/postpro";
 import { Ocean } from "@Glibs/world/ocean/ocean";
 import { FloorHex } from "./floorhex";
+import { Char } from "@Glibs/loader/assettypes";
 
 export class ThreeFactory {
     loader = new Loader()
@@ -73,17 +74,17 @@ export class ThreeFactory {
     ) {
         this.gphysics = new GPhysics(this.game, this.eventCtrl)
         this.invenFab = new InvenFactory(this.loader, this.eventCtrl)
-        this.player = new Player(this.loader, this.loader.DogAsset, this.eventCtrl, this.game)
+        this.player = new Player(this.loader, this.loader.GetAssets(Char.CharAniDog), this.eventCtrl, this.game)
         this.playerCtrl = new PlayerCtrl(this.player, this.invenFab.inven, this.gphysics, this.eventCtrl, { immortal: true })
         this.floor = new FloorHex()
         this.tree = new TreeMaker(this.loader, eventCtrl, game)
 
-        this.camera = new Camera(this.canvas, this.eventCtrl, this.player, this.renderer.domElement)
-        this.pp = new Postpro(this.game, this.camera, this.renderer)
+        this.camera = new Camera(this.canvas, this.eventCtrl, this.renderer.domElement, this.player)
+        this.pp = new Postpro(this.game, this.camera, this.renderer, eventCtrl)
         this.camera.position.set(15, 15, 15)
         this.wind = new Wind(this.eventCtrl)
         this.nonglowfn = (mesh: any) => { this.pp.setNonGlow(mesh) }
-        this.ocean = new Ocean(this.eventCtrl)
+        this.ocean = new Ocean(this.eventCtrl, this.light)
 
         this.monster = new Monsters(this.loader, this.eventCtrl, this.game, this.player, [], [], this.gphysics, this.monDb)
         this.monster.Enable = true
@@ -102,7 +103,7 @@ export class ThreeFactory {
     }
     async FoodLoad() {
         for (let i = 0; i < 5; i++) {
-            this.food.push(new Food(this.loader.AppleAsset, this.player, this.eventCtrl))
+            this.food.push(new Food(this.loader.GetAssets(Char.Apple), this.player, this.eventCtrl))
         }
         const ret = await Promise.all(
             this.food.map(async (f) => {
@@ -112,7 +113,7 @@ export class ThreeFactory {
     }
     async GltfLoad() {
         const ret = await Promise.all([
-            await this.player.Loader(this.loader.DogAsset, new THREE.Vector3(0, 0, 0), "dog"),
+            await this.player.Loader(this.loader.GetAssets(Char.CharAniDog), new THREE.Vector3(0, 0, 0), "dog"),
             await this.tree.Create({ position: new THREE.Vector3(-3, 0, -3) }),
         ]).then(() => {
             this.player.Visible = true
